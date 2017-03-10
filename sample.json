@@ -1,0 +1,8 @@
+{
+    "_format":1.0
+    ,"points":
+    [
+        {"when":"2017-01-01", "sprint":"s01", "name":"start", "value":"32"}
+        ,{"when":"2017-01-15", "sprint":"s02", "name":"start", "value":"43"}
+    ]
+}
