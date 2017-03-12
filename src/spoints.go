@@ -89,6 +89,11 @@ func work() {
         /*fmt.Printf("r:%s -> d:'%s' has '%s' of type %s.\n",
             app_data.file_name, dir, name, ext)*/
         
+        if app_data.mode_init {
+            //create data file
+            writeData(app_data.file_name, CreateData(1.0))
+        }
+        
         if app_data.mode_add != "" {
             //run add 
             add_work(app_data, app_data.mode_add)
