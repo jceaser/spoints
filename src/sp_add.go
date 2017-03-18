@@ -14,10 +14,13 @@ func add_handleFlags() {
 
 }
 
+/**
+Do the Add process
+@param app current app status
+@param options what to add, should be name1=value1,name2=value2
+*/
 func add_work(app App_Data, options string) {
     add_handleFlags()
-    
-    //fmt.Printf("inside of add on '%s' for '%s' with '%s'.\n", app.when, app.sprint, options)
     
     if app.when=="now" {
         app.when = now()
@@ -31,21 +34,24 @@ func add_work(app App_Data, options string) {
     
     data := readData(app.file_name)
     
-    opt := strings.Split(options, "=")
-    name := opt[0]
-    value, err := strconv.Atoi(opt[1])
-    if err!=nil {
-        value = -1
+    for _, pair := range strings.Split(options, ",") {
+        opt := strings.Split(pair, "=")
+        name := opt[0]
+        value, err := strconv.Atoi(opt[1])
+        if err!=nil {value = -1}
+    
+        row := CreateRow(app.when, app.sprint, name, value)
+        data.add(row)
     }
     
-    row := CreateRow(app.when, app.sprint, name, value)
-    //data.Points = append(data.Points, row)
-    data.add(row)
-    
-    //writeData("out."+app.file_name, data)
-    writeData(app.file_name, data)
+    if !app.dry_run {
+        writeData(app.file_name, data)
+    }
 }
 
+/**
+@return current ISO date time
+*/
 func now() string {
     n := time.Now()
     y, m, d := n.Date()
@@ -56,6 +62,9 @@ func now() string {
     return out
 }
 
+/**
+@return current ISO date
+*/
 func today() string {
     n := time.Now()
     y, m, d := n.Date()

@@ -73,10 +73,9 @@ func (d *Data) add(r Row) {
     shouldAdd := true
     for idx, obj := range d.Points {
         if obj.Different(r) {
-            fmt.Printf("not the same, add it\n")
+            shouldAdd = true
         } else {
             if obj.DifferentValue(r) {
-                fmt.Printf("found one, lets update instead\n")
                 d.Points[idx] = r
             }
             shouldAdd = false
@@ -86,6 +85,26 @@ func (d *Data) add(r Row) {
     if shouldAdd {
         d.Points = append(d.Points, r)
     }
+}
+
+func remove(a []Row, i int) []Row {
+    b := []Row{}
+    
+    b = append(b, a[:i]...)
+    b = append(b, a[i+1:]...)
+    
+    return b
+}
+
+//not working yet
+func (d *Data) remove(i int, r Row) int {
+    affected := 0
+    
+    d.Points = remove(d.Points, i)
+    
+    affected = 1
+    
+    return affected
 }
 
 func (d Data) toString() string {
@@ -112,7 +131,6 @@ func readData(file string) Data {
     json.Unmarshal(raw, &c)
     return c
 }
-
 
 func writeData(file string, data Data) {
     //json_data, _ := json.Marshal(data)

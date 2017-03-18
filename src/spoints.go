@@ -20,10 +20,12 @@ import ("os"
 
 type App_Data struct {
     file_name string
+    dry_run bool
     mode_init bool
-    mode_add string
-    mode_remove bool
+    mode_add string     //start=44
+    mode_remove string  //sprint:name
     mode_report bool
+    
     
     when string
     sprint string
@@ -43,8 +45,9 @@ func handleFlags() {
     raw_name := flag.String("name", "data.json", "location of data file")
     
     raw_init := flag.Bool("init", false, "add a new data point")
+    raw_dry := flag.Bool("dry-run", false, "don't write any new data")
     raw_add := flag.String("add", "", "add a new data point")
-    raw_remove := flag.Bool("remove", false, "remove a data point")
+    raw_remove := flag.String("remove", "", "remove a data point")
     raw_report := flag.Bool("report", false, "generate a report")
     
     raw_date := flag.String("when", "today", "when did the data point happen")
@@ -61,6 +64,7 @@ func handleFlags() {
     }
     app_data.file_name = *raw_name
     app_data.mode_init = *raw_init
+    app_data.dry_run = *raw_dry
     app_data.mode_add = *raw_add
     app_data.mode_remove = *raw_remove
     app_data.mode_report = *raw_report
@@ -89,23 +93,23 @@ func work() {
         /*fmt.Printf("r:%s -> d:'%s' has '%s' of type %s.\n",
             app_data.file_name, dir, name, ext)*/
         
-        if app_data.mode_init {
-            //create data file
-            writeData(app_data.file_name, CreateData(1.0))
-        }
-        
         if app_data.mode_add != "" {
             //run add 
             add_work(app_data, app_data.mode_add)
         }
-        if app_data.mode_remove {
-            //run remove command
+        if app_data.mode_remove != "" {
+            rm_work(app_data, app_data.mode_remove)
         }
         if app_data.mode_report {
             //run report command
         }
     } else {//nothing to do
-        fmt.Printf(ERR_MSG_01, app_data.file_name)
+        if app_data.mode_init {
+            //create data file
+            writeData(app_data.file_name, CreateData(1.0))
+        } else {
+            fmt.Printf(ERR_MSG_01, app_data.file_name)
+        }
     }
 }
 
@@ -115,5 +119,4 @@ func main() {
     handleFlags()
     
     work()
-
 }
