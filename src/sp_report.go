@@ -53,25 +53,47 @@ func report_work(app App_Data, options string) {
 
 func ChartText(app App_Data, data Data) string {
     out := ""
-    grid := [24][40]string{}
+    grid := [24][80]string{}
+    RangeY := 24
+    //RangeX := 80
     
-    //grid[0][0] = "24"
-    //grid[23][0] = "0"
+    max := data.Ranges()["global"].Max
+    //min = data.Ranges()["min-max"].Min
     
+    //fill grid
     found := 1
-    for _, obj := range data.Points {
-        if (obj.Name=="Start") {
-            grid[obj.Value][found] = " X"
-            found = found + 1
+    for uidx, u := range data.UniqueSprints() {
+        fmt.Printf("sprint %s\n", u)
+        for _, obj := range data.Points {
+            if (obj.Sprint==u && obj.Name=="Start") {
+                ratio := float64(max)/float64(RangeY)
+                y := int(float64(obj.Value) / ratio) -1
+                
+                grid[y][(uidx+1)] = "X"
+                found = found + 1
+            } else if obj.Sprint==u && obj.Name=="Stop" {
+                ratio := float64(max)/float64(RangeY)
+                y := int(float64(obj.Value) / ratio) -1
+                
+                grid[y][(uidx+1)] = "+"
+                found = found + 1
+            }
         }
     }
     
+    //draw the grid out
     for y:= range grid {
-        out = fmt.Sprintf("%s%.2d|", out, 24-y)
-        for x:= range grid[y]{
-            out = fmt.Sprintf("%s%s", out, grid[y][x])
+        out = fmt.Sprintf("%s%.2d|", out, RangeY-y)
+        x_line := ""
+        for x := range grid[y]{
+            cell := "."
+            if 0<len(grid[y][x]) {
+                cell = grid[y][x]
+            }
+            
+            x_line = fmt.Sprintf("%s%s", x_line, cell)
         }
-        out = out + "\n"
+        out = fmt.Sprintf("%s%s\n", out, x_line)
     }
     
     data.UniqueSprints()

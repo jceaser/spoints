@@ -3,11 +3,12 @@ package main
 import ("os"
     "fmt"
     //"flag"
+    //"reflect"
+    "math"
     "strings"
     "encoding/json"
     "io/ioutil"
     )
-
 
 /*
 {
@@ -144,16 +145,55 @@ func (d *Data) remove(i int, r Row) int {
     return affected
 }
 
-func (self Data) UniqueSprints() string {
-    //ret := []string
+
+
+func (self Data) Ranges() map[string]stat {
+    stats := make(map[string]stat)
+    global := stat{}
+    global.Name = "global"
+    for _, v := range self.Points {
+        if val, exists := stats[v.Name]; exists {//update
+            //s := stats[v.Name]
+            val.Value += v.Value
+            val.Count += 1
+            val.Avg = val.Value/val.Count
+            val.Min = int(math.Min(float64(val.Min), float64(v.Value)))
+            val.Max = int(math.Max(float64(val.Max), float64(v.Value)))
+            stats[v.Name] = val
+            
+        } else {//add
+            s := stat{}
+            s.Name = v.Name
+            s.Value = v.Value
+            s.Count = 1
+            s.Avg = s.Value
+            s.Min = s.Value
+            s.Max = s.Value
+            stats[v.Name] = s
+        }
+        global.Value += v.Value
+        global.Count += 1
+        global.Min = int(math.Min(float64(global.Min), float64(v.Value)))
+        global.Max = int(math.Max(float64(global.Max), float64(v.Value)))
+    }
+    global.Avg = global.Value/global.Count
+    stats["global"] = global
+    
+    return stats
+}
+
+func (self Data) UniqueSprints() []string {
+    ret := []string{}
     keys := map[string]bool{}
     for _, obj := range self.Points {
         keys[obj.Sprint]=true
     }
     
-    fmt.Printf("%s\n", keys)
+    for k, _ := range keys {
+        ret = append(ret, k)
+    }
     
-    return ""
+    return ret
 }
 
 func (d Data) toString() string {
