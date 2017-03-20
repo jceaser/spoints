@@ -3,6 +3,7 @@ package main
 import ("os"
     "fmt"
     //"flag"
+    "strings"
     "encoding/json"
     "io/ioutil"
     )
@@ -25,9 +26,42 @@ type Row struct {
     Name string `json:name`
     Value int `json:value`
 }
+
+/**************************************/
+/* outputs */
+
 func (r Row) toString() string {
     return fmt.Sprintf("w: %s, s: %s, %s=%d", r.When, r.Sprint, r.Name, r.Value)
 }
+
+func quote(raw string) string {
+    return strings.Replace(raw, "\"", "\"\"", -1)
+}
+
+func (self Row) ToArray() []string {
+    list := []string { self.When, self.Sprint, self.Name, fmt.Sprintf("%d",self.Value) }
+    return list
+}
+
+func (self Row) ToTextList(sep string) string {
+    list := self.ToArray()
+    return strings.Join(list, sep)
+}
+
+func (self Row) ToTab() string {
+    return self.ToTextList("\t")
+}
+
+func (self Row) ToCsv2() string {
+    return self.ToTextList(", ")
+}
+
+func (self Row) ToCsv() string {
+    return fmt.Sprintf("\"%s\", \"%s\", \"%s\", %d", quote(self.When),
+         quote(self.Sprint), quote(self.Name), self.Value)
+}
+
+/**************************************/
 
 func (self Row) DifferentValue(other Row) bool {
     ret := true  //assume different
@@ -110,6 +144,18 @@ func (d *Data) remove(i int, r Row) int {
     return affected
 }
 
+func (self Data) UniqueSprints() string {
+    //ret := []string
+    keys := map[string]bool{}
+    for _, obj := range self.Points {
+        keys[obj.Sprint]=true
+    }
+    
+    fmt.Printf("%s\n", keys)
+    
+    return ""
+}
+
 func (d Data) toString() string {
     out := fmt.Sprintf("%1.1f [", d.Format)
     for i, v := range d.Points {
@@ -122,6 +168,8 @@ func (d Data) toString() string {
     out = fmt.Sprintf("%s]", out)
     return out
 }
+
+/**************************************/
 
 func readData(file string) Data {
     raw, err := ioutil.ReadFile(file)

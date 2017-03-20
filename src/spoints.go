@@ -35,9 +35,8 @@ type App_Data struct {
     mode_init bool
     mode_add string     //start=44
     mode_remove string  //sprint:name
-    mode_report bool
+    mode_report string
     mode_stats bool
-    
     
     when string
     sprint string
@@ -60,7 +59,7 @@ func handleFlags() {
     raw_dry := flag.Bool("dry-run", false, "don't write any new data")
     raw_add := flag.String("add", "", "add a new data point")
     raw_remove := flag.String("remove", "", "remove a data point")
-    raw_report := flag.Bool("report", false, "generate a report")
+    raw_report := flag.String("report", "", "generate a report")
     raw_stats := flag.Bool("stats", false, "print out some basic statistics")
     
     raw_date := flag.String("when", "today", "when did the data point happen")
@@ -108,8 +107,9 @@ func work() {
         if app_data.mode_remove != "" {
             rm_work(app_data, app_data.mode_remove)
         }
-        if app_data.mode_report {
+        if app_data.mode_report != "" {
             //run report command
+            report_work(app_data, app_data.mode_report)
         }
         if app_data.mode_stats {
             stats_work(app_data, "")
