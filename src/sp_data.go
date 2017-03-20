@@ -72,12 +72,15 @@ func CreateData(format float32) Data {
 func (d *Data) add(r Row) {
     shouldAdd := true
     for idx, obj := range d.Points {
-        if obj.Different(r) {
+        //add or update
+        if obj.Different(r) {//add
             shouldAdd = true
         } else {
             if obj.DifferentValue(r) {
+                //update it
                 d.Points[idx] = r
             }
+            //could be the same
             shouldAdd = false
             break
         }

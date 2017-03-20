@@ -5,10 +5,21 @@ find files in the pattern of name.ext and roll them back to name.num.ext. Any na
 
 This class dispatches to the handler that will handle the actual request, current requests are 
 
-* add
-* remove
-* report
+CRUD
+
+* add (Create), (Update)
+* report (Read)
+* remove (delete)
 * help
+
+p|             x
+o|         x
+i| x               x
+n|     x
+t|                     x
+s|
+-------------------------------
+   s1  s2  s3  s4  s5  s6
 
 */
 
@@ -25,6 +36,7 @@ type App_Data struct {
     mode_add string     //start=44
     mode_remove string  //sprint:name
     mode_report bool
+    mode_stats bool
     
     
     when string
@@ -49,6 +61,7 @@ func handleFlags() {
     raw_add := flag.String("add", "", "add a new data point")
     raw_remove := flag.String("remove", "", "remove a data point")
     raw_report := flag.Bool("report", false, "generate a report")
+    raw_stats := flag.Bool("stats", false, "print out some basic statistics")
     
     raw_date := flag.String("when", "today", "when did the data point happen")
     raw_sprint := flag.String("sprint", "", "which sprint is this for")
@@ -68,6 +81,7 @@ func handleFlags() {
     app_data.mode_add = *raw_add
     app_data.mode_remove = *raw_remove
     app_data.mode_report = *raw_report
+    app_data.mode_stats = *raw_stats
     
     app_data.when = *raw_date
     app_data.sprint = *raw_sprint
@@ -86,12 +100,6 @@ func exists(path string) bool {
 func work() {
     if exists(app_data.file_name) {
         //something to do
-        //var dir,full_name = filepath.Split(app_data.file_name)
-        //var ext = filepath.Ext(full_name)
-        //var name = full_name[0:len(full_name)-len(ext)]
-        
-        /*fmt.Printf("r:%s -> d:'%s' has '%s' of type %s.\n",
-            app_data.file_name, dir, name, ext)*/
         
         if app_data.mode_add != "" {
             //run add 
@@ -102,6 +110,9 @@ func work() {
         }
         if app_data.mode_report {
             //run report command
+        }
+        if app_data.mode_stats {
+            stats_work(app_data, "")
         }
     } else {//nothing to do
         if app_data.mode_init {
