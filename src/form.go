@@ -19,15 +19,15 @@ l-28
 */
 
 type App_Data struct {
-    workers int
-    days int
-    holidays int
-    vacations int
-    maintenance int
+    workers float64
+    days float64
+    holidays float64
+    vacations float64
+    maintenance float64
     
-    velocity int
-    reserve int
-    load int
+    velocity float64
+    reserve float64
+    load float64
 }
 
 const (
@@ -43,7 +43,7 @@ func add_handleFlags() {
 
 }
 
-func assignNum(msg string, field *int, def int) {
+func assignNum(msg string, field *float64, def float64) {
     var raw string
     
     fmt.Printf(msg)
@@ -51,7 +51,7 @@ func assignNum(msg string, field *int, def int) {
     if (raw=="") {
         *field = def
     } else {
-        *field, _ = strconv.Atoi(raw)
+        *field, _ = strconv.ParseFloat(raw, 64)
     }
     fmt.Printf("\033[1;1H")
     var _, w = termSize()
@@ -91,28 +91,34 @@ func work() {
     
     var a = "\033[1;1H"     //move to 1,1
     
-    assignNum(a + "Num of developers (5) ", &app_data.workers, 5)
-    assignNum(a + "Num of days (10) ", &app_data.days, 10)
-    assignNum(a + "Holidays (0) ", &app_data.holidays, 0)
-    assignNum(a + "Vacations (0) ", &app_data.vacations, 0)
-    assignNum(a + "Reserve (10) ", &app_data.reserve, 10)
-    assignNum(a + "Maintenance (40) ", &app_data.maintenance, 40)
+    assignNum(a + "Num of developers (5.0) ", &app_data.workers, 5.0)
+    assignNum(a + "Num of days (10.0) ", &app_data.days, 10.0)
+    assignNum(a + "Holidays (0.0) ", &app_data.holidays, 0.0)
+    assignNum(a + "Vacations (0.0) ", &app_data.vacations, 0.0)
+    assignNum(a + "Reserve points (10.0) ", &app_data.reserve, 10.0)
+    assignNum(a + "Maintenance percentage (40.0) ", &app_data.maintenance, 40.0)
 
-    var tdays = app_data.workers*app_data.days
-    var outage = app_data.vacations+app_data.holidays*app_data.workers
+    var total_days = app_data.workers*app_data.days
+    var outage_days = app_data.vacations + (app_data.holidays*app_data.workers)
     
-    app_data.velocity = tdays-outage
-    app_data.load = tdays-outage-app_data.reserve
+    app_data.velocity = total_days-outage_days
+    app_data.load = total_days-outage_days-app_data.reserve
     
-    var app_target = 1.0 - (float64(app_data.maintenance*1.0)/100.0)
+    var app_target = 1.0 - (app_data.maintenance/100.0) //0.6=1-40/100
+    var schedule_points = app_data.load * app_target
     
-    fmt.Printf("Total days for %d developers is %d, but subtract out %d outage days. velocity is %d but with a reserve of %d schedule at %f.\n",
+    fmt.Printf(
+    		"Total days for %.2f developers is %.2f, but subtract out %.2f" +
+    		" outage days.\nTotal velocity is %.2f with a capacity" +
+    		" of %.2f due to a reserve of %.2f,\nso schedule at %.2f given a %0.1f%% target.\n",
         app_data.workers,
-        tdays,
-        outage,
+        total_days,
+        outage_days,
         app_data.velocity,
+        app_data.load,
         app_data.reserve,
-        float64(app_data.load) * app_target)
+        schedule_points,
+        app_target*100)
         //(1.0*app_data.load) * app_target )
 }
 

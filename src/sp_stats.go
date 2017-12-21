@@ -55,9 +55,7 @@ func stats_work(app App_Data, options string) {
         }
         count_by_name[v.Name] += v.Value
         
-        //fmt.Printf("stat struct %s\n", stats[v.Name])
         if val, exists := stats[v.Name]; exists {//update
-            //s := stats[v.Name]
             val.Value += v.Value
             val.Count += 1
             val.Avg = val.Value/val.Count
@@ -78,8 +76,6 @@ func stats_work(app App_Data, options string) {
     keys := reflect.ValueOf(uniq_sprints).MapKeys()
     names := reflect.ValueOf(uniq_names).MapKeys()
     
-    //fmt.Printf("%s\n", count_by_name)
-    
     /*
       | Start | Stop |
     ------------------
@@ -89,10 +85,8 @@ func stats_work(app App_Data, options string) {
     avg  33   |  26.5
     */
     
-    //for _, v := range data.Points {
-        
-    //}
-    
     fmt.Printf("%s -> %s\n", keys, names)
-    fmt.Printf("stat: %s\n", stats)
+    for _, v := range stats {
+        fmt.Printf("stats for %s: %s\n", v.Name, v)
+    }
 }
