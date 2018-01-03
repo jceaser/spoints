@@ -11,23 +11,17 @@ import ("os"
     //"io/ioutil"
     )
 
-
-/**
-v-38
-r-10
-l-28
-*/
-
 type App_Data struct {
     workers float64
     days float64
     holidays float64
     vacations float64
     maintenance float64
+    points float64
     
-    velocity float64
+    capacity float64
     reserve float64
-    load float64
+    velocity float64
 }
 
 const (
@@ -92,34 +86,40 @@ func work() {
     var a = "\033[1;1H"     //move to 1,1
     
     assignNum(a + "Num of developers (5.0) ", &app_data.workers, 5.0)
-    assignNum(a + "Num of days (10.0) ", &app_data.days, 10.0)
-    assignNum(a + "Holidays (0.0) ", &app_data.holidays, 0.0)
-    assignNum(a + "Vacations (0.0) ", &app_data.vacations, 0.0)
+    assignNum(a + "Num of days in sprint(10.0) ", &app_data.days, 10.0)
+    assignNum(a + "Holiday days (0.0) ", &app_data.holidays, 0.0)
+    assignNum(a + "Vacation days (0.0) ", &app_data.vacations, 0.0)
+    assignNum(a + "Sprint points in a day (1.0) ", &app_data.points, 1.0)
     assignNum(a + "Reserve points (10.0) ", &app_data.reserve, 10.0)
     assignNum(a + "Maintenance percentage (40.0) ", &app_data.maintenance, 40.0)
-
+    
+    //clean up values
+    app_data.maintenance = app_data.maintenance/100.0
+	
+	//calculate days
     var total_days = app_data.workers*app_data.days
     var outage_days = app_data.vacations + (app_data.holidays*app_data.workers)
     
-    app_data.velocity = total_days-outage_days
-    app_data.load = total_days-outage_days-app_data.reserve
+    //calculate points
+    app_data.capacity = app_data.points * (total_days-outage_days)
+    app_data.velocity = app_data.capacity - app_data.reserve
     
-    var app_target = 1.0 - (app_data.maintenance/100.0) //0.6=1-40/100
-    var schedule_points = app_data.load * app_target
+    var app_target = 1.0 - app_data.maintenance //0.6=1-.4
+    var schedule_points = app_data.velocity * app_target
+    var maintenance_points = app_data.velocity * app_data.maintenance
     
     fmt.Printf(
-    		"Total days for %.2f developers is %.2f, but subtract out %.2f" +
-    		" outage days.\nTotal velocity is %.2f with a capacity" +
-    		" of %.2f due to a reserve of %.2f,\nso schedule at %.2f given a %0.1f%% target.\n",
-        app_data.workers,
-        total_days,
-        outage_days,
-        app_data.velocity,
-        app_data.load,
-        app_data.reserve,
-        schedule_points,
-        app_target*100)
-        //(1.0*app_data.load) * app_target )
+    	"Total days for %.2f developers is %.2f, but subtract out %.2f outage days.\n",
+    	app_data.workers, total_days, outage_days)
+    
+    fmt.Printf(
+    	"Capacity is %.2f with a velocity of %.2f due to a reserve of %.2f.\n",
+    	app_data.capacity, app_data.velocity, app_data.reserve)
+	fmt.Printf(
+		"Schedule at %.2f given a %0.1f%% target leaving %.2f points for maintenance.\n",
+        schedule_points, app_target*100, maintenance_points)
+    fmt.Printf("%.2f = (%.2f-%.2f) * (1-%.2f)\n",
+    	schedule_points, app_data.capacity, app_data.reserve, app_data.maintenance)
 }
 
 func main() {
