@@ -57,33 +57,49 @@ func ChartText(app App_Data, data Data) string {
     RangeY := 24
     //RangeX := 80
     
+    symb_def := [3][2]string {
+    	{"{", "}"},
+    	{"[", "]"},
+    	{"(", ")"}}
+    
+    fmt.Printf("%s\n", data.Ranges()["global"])
     max := data.Ranges()["global"].Max
+    //min := data.Ranges()["global"].Min
     //min = data.Ranges()["min-max"].Min
     
+    ratio := float64(max)/float64(RangeY)
+	//fmt.Printf("ration %f=%d/%d\n", ratio, max, RangeY)
+	
     //fill grid
     found := 1
     for uidx, u := range data.UniqueSprints() {
-        fmt.Printf("sprint %s\n", u)
+        //fmt.Printf("sprint %s : %d-%d\n", u, min, max)
+		sym := symb_def[0]
+		if uidx % 2 == 0 {
+			sym = symb_def[1]
+		} else if uidx % 3 == 0 {
+			sym = symb_def[2]
+		}
         for _, obj := range data.Points {
             if (obj.Sprint==u && obj.Name=="Start") {
-                ratio := float64(max)/float64(RangeY)
-                y := int(float64(obj.Value) / ratio) -1
+                y := int(float64(obj.Value) * ratio) -1
+        		//fmt.Printf("sprint %s : %s %d\n", u, obj.Name, obj.Value)
                 
-                grid[y][(uidx+1)] = "X"
+                grid[y][(uidx+1)] = sym[0] //"{"
                 found = found + 1
             } else if obj.Sprint==u && obj.Name=="Stop" {
-                ratio := float64(max)/float64(RangeY)
-                y := int(float64(obj.Value) / ratio) -1
+                y := int(float64(obj.Value) * ratio) -1
                 
-                grid[y][(uidx+1)] = "+"
+                grid[y][(uidx+1)] = sym[1] //"}"
                 found = found + 1
             }
         }
     }
     
     //draw the grid out
-    for y:= range grid {
-        out = fmt.Sprintf("%s%.2d|", out, RangeY-y)
+    for yy:= range grid {
+    	y := len(grid)-1-yy
+        out = fmt.Sprintf("%s%.2d|", out, /*RangeY-*/y+1)
         x_line := ""
         for x := range grid[y]{
             cell := "."
