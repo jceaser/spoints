@@ -5,6 +5,7 @@ import ("os"
     //"flag"
     //"reflect"
     "math"
+    "sort"
     "strings"
     "encoding/json"
     "io/ioutil"
@@ -145,22 +146,27 @@ func (d *Data) remove(i int, r Row) int {
     return affected
 }
 
+func Min(running int, current int) int {
+	return int (math.Min(float64(running), float64(current)))
+}
 
+func Max(running int, current int) int {
+	return int(math.Max(float64(running), float64(current)))
+}
 
 func (self Data) Ranges() map[string]stat {
     stats := make(map[string]stat)
     global := stat{}
     global.Name = "global"
+    global.Min = 0x7fffffffffffffff	//assume a very large number
     for _, v := range self.Points {
         if val, exists := stats[v.Name]; exists {//update
-            //s := stats[v.Name]
-            val.Value += v.Value
-            val.Count += 1
-            val.Avg = val.Value/val.Count
-            val.Min = int(math.Min(float64(val.Min), float64(v.Value)))
-            val.Max = int(math.Max(float64(val.Max), float64(v.Value)))
+			val.Value += v.Value
+			val.Count += 1
+			val.Avg = val.Value/val.Count
+			val.Min = Min(val.Min, v.Value)
+			val.Max = Max(val.Max, v.Value)
             stats[v.Name] = val
-            
         } else {//add
             s := stat{}
             s.Name = v.Name
@@ -170,11 +176,12 @@ func (self Data) Ranges() map[string]stat {
             s.Min = s.Value
             s.Max = s.Value
             stats[v.Name] = s
+            
         }
         global.Value += v.Value
         global.Count += 1
-        global.Min = int(math.Min(float64(global.Min), float64(v.Value)))
-        global.Max = int(math.Max(float64(global.Max), float64(v.Value)))
+        global.Min = Min(global.Min, v.Value)
+        global.Max = Max(global.Max, v.Value)
     }
     global.Avg = global.Value/global.Count
     stats["global"] = global
@@ -192,6 +199,8 @@ func (self Data) UniqueSprints() []string {
     for k, _ := range keys {
         ret = append(ret, k)
     }
+    
+    sort.Strings(ret)
     
     return ret
 }
