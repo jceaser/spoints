@@ -106,7 +106,7 @@ func set_def(field *float64, long_flag string, short_flag string, arg string, ne
 }
 
 func work() {
-	defaults := App_Defaults{5.0, 10.0, 0, 0, 1, 8, 40}
+	defaults := App_Defaults{5.0, 10.0, 0, 0, 1, 8, 40, true}
     
     var a = ""
     
