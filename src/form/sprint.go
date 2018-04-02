@@ -20,8 +20,19 @@ type App_Data struct {
     points float64
     
     capacity float64
-    reserve float64
     velocity float64
+	load float64
+    reserve float64
+    reserve_and_maintenance float64
+    
+}
+
+func (a App_Data) String() string {
+    return fmt.Sprintf("\nSummary:\nC=%.2f\nV=%.2f\nL=%.2f\nR=%.2f\n",
+    	 a.capacity,
+    	 a.velocity,
+    	 a.load,
+    	 a.reserve_and_maintenance)
 }
 
 type App_Defaults struct {
@@ -159,6 +170,9 @@ func work() {
     var schedule_points = app_data.velocity * app_target
     var maintenance_points = app_data.velocity * app_data.maintenance
     
+    app_data.load = schedule_points
+    app_data.reserve_and_maintenance = app_data.reserve + maintenance_points
+    
     fmt.Printf(
     	"Total days for %.2f developers is %.2f, but subtract out %.2f outage days.\n",
     	app_data.workers, total_days, outage_days)
@@ -171,6 +185,14 @@ func work() {
         schedule_points, app_target*100, maintenance_points)
     fmt.Printf("%.2f = (%.2f-%.2f) * (1-%.2f)\n",
     	schedule_points, app_data.capacity, app_data.reserve, app_data.maintenance)
+    	
+    /*fmt.Printf("\n\n C=%.2f\n V=%.2f\n L=%.2f\n R=%.2f\n",
+    	 app_data.capacity,
+    	 app_data.velocity,
+    	 schedule_points,
+    	 maintenance_points)
+	*/
+	fmt.Printf(app_data.String())
 }
 
 func main() {
