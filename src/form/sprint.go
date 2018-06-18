@@ -2,6 +2,7 @@ package main
 
 import ("os"
     "fmt"
+    "math"
     //"time"
     //"strings"
     "strconv"
@@ -116,10 +117,34 @@ func set_def(field *float64, long_flag string, short_flag string, arg string, ne
 	return false
 }
 
+func help(defaults App_Defaults) {	
+	var _, w = termSize()
+	flex := int(math.Min(float64(48), float64(w-35))) //20 on left, 15 on right
+
+	format1 := "%4s %-16s  %-" + strconv.Itoa(flex) + "s [%s]\n"
+	format2 := "%4s %-16s  %-" + strconv.Itoa(flex) + "s [%2.1f]\n"
+	
+	fmt.Printf("sprint -H | [ -D -w -d -h -v -p -r -m ] [-i | -I]\n")
+	fmt.Printf(format1, "Flag","Long Flag","Description","Default")
+	fmt.Printf(format2, "-w", "--workers", "Workers In Sprint", defaults.workers)
+	fmt.Printf(format2, "-d", "--days", "Days in Sprint", defaults.days)
+	fmt.Printf(format2, "-h", "--holidays", "Holiday Days", defaults.holidays)
+	fmt.Printf(format2, "-v", "--vacations", "Vacation Days", defaults.vacation)
+	fmt.Printf(format2, "-p", "--points-per-day", "Points to days conversion", defaults.points_per_day)
+	fmt.Printf(format2, "-r", "--reserve", "Points to hold back in reserve", defaults.reserve)
+	fmt.Printf(format2, "-m", "--maintenance", "% of maintenance", defaults.maintenance)
+	fmt.Printf(format2, "-D", "--dump", "don't ask values, just dump", defaults.maintenance)
+	fmt.Printf(format2, "-H", "--help", "This help", defaults.maintenance)
+	fmt.Printf(format1, "-i", "--inline", "Inline mode, clear screen, one question at time", "")
+	fmt.Printf(format1, "-I", "--not-inline", "Not Inline mode, don't manipulate position", "default")
+	os.Exit(0)
+}
+
 func work() {
 	defaults := App_Defaults{5.0, 10.0, 0, 0, 1, 8, 40, true}
     
     var a = ""
+    var dump = false
     
     for i:=1; i<len(os.Args); i++ {
 		arg := os.Args[i]
@@ -134,6 +159,8 @@ func work() {
 		if set_def(&defaults.reserve, "--reserve", "-r", arg, next){continue}
 		if set_def(&defaults.maintenance, "--maintenance", "-m", arg, next){continue}
 		
+		if arg=="--dump" || arg=="-D" {dump=true;continue}
+		
 		if arg=="--inline" || arg=="-i" {
 			a = "inline"
 			continue;
@@ -143,17 +170,29 @@ func work() {
 			continue;
 		}
 		
+		if arg=="--help" || arg=="-H" {help(defaults);}		
+		
 	}
-	    
-    termClear()
+	
+	if dump {
+		app_data.workers = defaults.workers
+		app_data.days = defaults.days
+		app_data.holidays = defaults.holidays
+		app_data.vacations = defaults.vacation
+		app_data.points = defaults.points_per_day
+		app_data.reserve = defaults.reserve
+		app_data.maintenance = defaults.maintenance
+	} else {
+	    if (a!=""){termClear()}
     
-    assignNum(a, "Num of developers (%.2f) ", &app_data.workers, defaults.workers)
-    assignNum(a, "Num of days in sprint(%.2f) ", &app_data.days, defaults.days)
-    assignNum(a, "Holiday days (%.2f) ", &app_data.holidays, defaults.holidays)
-    assignNum(a, "Vacation days (%.2f) ", &app_data.vacations, defaults.vacation)
-    assignNum(a, "Sprint points in a day (%.2f) ", &app_data.points, defaults.points_per_day)
-    assignNum(a, "Reserve points (%.2f) ", &app_data.reserve, defaults.reserve)
-    assignNum(a, "Maintenance percentage (%.2f) ", &app_data.maintenance, defaults.maintenance)
+		assignNum(a, "Num of developers (%.2f) ", &app_data.workers, defaults.workers)
+		assignNum(a, "Num of days in sprint(%.2f) ", &app_data.days, defaults.days)
+		assignNum(a, "Holiday days (%.2f) ", &app_data.holidays, defaults.holidays)
+		assignNum(a, "Vacation days (%.2f) ", &app_data.vacations, defaults.vacation)
+		assignNum(a, "Sprint points in a day (%.2f) ", &app_data.points, defaults.points_per_day)
+		assignNum(a, "Reserve points (%.2f) ", &app_data.reserve, defaults.reserve)
+		assignNum(a, "Maintenance percentage (%.2f) ", &app_data.maintenance, defaults.maintenance)
+    }
     
     //clean up values
     app_data.maintenance = app_data.maintenance/100.0
